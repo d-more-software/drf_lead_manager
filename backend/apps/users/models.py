@@ -1,9 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-# Create your models here.
+from apps.organizations.models import Organization
+
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="users"
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
