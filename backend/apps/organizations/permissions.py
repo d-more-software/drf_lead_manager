@@ -15,9 +15,10 @@ class IsOrganizationMember(BasePermission):
 
 
 class IsOrganizationOwner(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return request.user.memberships.filter(
-            organization=obj.organization,
-            role="OWNER"
-        ).exists()
+    def has_permission(self, request, view):
+        membership = getattr(request, "membership", None)
+        if not membership:
+            return False
+        return membership.role == "OWNER"
+
 

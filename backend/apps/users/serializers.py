@@ -6,17 +6,23 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    organization = serializers.SerializerMethodField()
+    organizations = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ("id", "email", "username", "organization")
+        fields = ("id", "email", "username", "organizations")
 
-    def get_organization(self, user):
-        membership = user.memberships.first()
-        if membership:
-            return membership.organization.name
-        return None
+    def get_organizations(self, user):
+        return [
+            {
+                "id": m.organization.id,
+                "name": m.organization.name,
+                "slug": m.organization.slug,
+                "role": m.role,
+            }
+            for m in user.memberships.select_related("organization")
+        ]
+
 
 
 

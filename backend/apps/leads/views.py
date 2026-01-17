@@ -16,10 +16,19 @@ class LeadViewSet(ModelViewSet):
 
     # 🔐 Organisation active du user
     def get_organization(self):
-        membership = self.request.user.memberships.first()
+        org_slug = self.kwargs["org_slug"]
+
+        membership = self.request.user.memberships.filter(
+        organization__slug=org_slug
+    ).first()
+
         if not membership:
-            raise PermissionDenied("User is not attached to any organization")
+            raise PermissionDenied("Not a member of this organization")
+
+        self.request.organization = membership.organization
+        self.request.membership = membership
         return membership.organization
+
 
     def get_queryset(self):
         return Lead.objects.filter(
