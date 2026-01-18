@@ -34,7 +34,6 @@ INSTALLED_APPS = [
 
     # Local apps
     'apps.users.apps.UsersConfig',
-    'apps.leads.apps.LeadsConfig',
     'apps.organizations.apps.OrganizationsConfig',
     'apps.core.apps.CoreConfig',
 
