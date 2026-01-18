@@ -18,6 +18,8 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = "accounts.User"
+
 
 # Application definition
 
@@ -33,6 +35,15 @@ INSTALLED_APPS = [
     'rest_framework',
 
     # Local apps
+    "apps.accounts",
+    "apps.agencies",
+    "apps.companies",
+    "apps.contracts",
+    "apps.invoices",
+    "apps.reminders",
+    "apps.emails",
+    "apps.documents",
+    "apps.subscriptions",
 
 
 ]
