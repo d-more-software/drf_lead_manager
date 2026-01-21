@@ -100,7 +100,7 @@ class Invoice(models.Model):
     @property
     def amount_due(self):
 
-        return self.amount_total - self.amount_paid
+        return max(self.amount_total - self.amount_paid,0)
 
     def save(self, *args, **kwargs):
 

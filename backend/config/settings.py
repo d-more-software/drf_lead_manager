@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "apps.companies",
     "apps.contracts",
     "apps.invoices",
+    "apps.payments",
     "apps.reminders",
     "apps.emails",
     "apps.documents",

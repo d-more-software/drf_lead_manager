@@ -3,13 +3,7 @@ from apps.invoices.models import Invoice
 
 
 class InvoiceSerializer(serializers.ModelSerializer):
-
-
-    amount_due = serializers.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        read_only=True
-    )
+    amount_due = serializers.SerializerMethodField()
 
     class Meta:
         model = Invoice
@@ -28,21 +22,25 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "created_at",
         )
         read_only_fields = (
-            "invoice_number",   
-            "issue_date",       
-            "amount_paid",      
-            "amount_due",       
-            "created_at",       
+            "invoice_number",
+            "issue_date",
+            "amount_paid",
+            "amount_due",
+            "created_at",
+            "status",
         )
+
+    def get_amount_due(self, obj):
+
+        return max(obj.amount_total - obj.amount_paid, 0)
 
     def validate(self, data):
 
         amount_total = data.get("amount_total")
-        amount_paid = data.get("amount_paid", 0)
 
-        if amount_total is not None and amount_paid > amount_total:
+        if amount_total is not None and amount_total <= 0:
             raise serializers.ValidationError(
-                "Paid amount cannot exceed total invoice amount."
+                "Invoice total amount must be greater than zero."
             )
 
         return data
