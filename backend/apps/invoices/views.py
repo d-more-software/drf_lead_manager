@@ -2,6 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from django.utils import timezone
+from apps.reminders.services import schedule_invoice_reminders
 
 from apps.invoices.models import Invoice
 from apps.invoices.serializers import InvoiceSerializer
@@ -29,10 +30,15 @@ class InvoiceViewSet(ModelViewSet):
             )
 
         invoice = serializer.save(
-            agency=user.agency,
-            created_by=user,
-            issue_date=timezone.now().date()
+        agency=user.agency,
+        created_by=user,
+        issue_date=timezone.now().date()
         )
+
+        schedule_invoice_reminders(invoice)
+
+
+            
 
         # ✅ refresh company status
         invoice.company.refresh_status()

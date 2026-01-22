@@ -13,6 +13,7 @@ class Invoice(models.Model):
     STATUS_CHOICES = (
         ("draft", "Draft"),
         ("sent", "Sent"),
+        ("pending","Pending"),
         ("paid", "Paid"),
         ("overdue", "Overdue"),
         ("cancelled", "Cancelled"),
