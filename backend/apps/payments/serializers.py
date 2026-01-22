@@ -3,7 +3,6 @@ from django.utils import timezone
 from decimal import Decimal
 
 from apps.payments.models import Payment
-from apps.invoices.models import Invoice
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -54,7 +53,6 @@ class PaymentSerializer(serializers.ModelSerializer):
         invoice = validated_data["invoice"]
         amount = validated_data["amount"]
 
-        
         payment = Payment.objects.create(
             invoice=invoice,
             agency=user.agency,
@@ -65,7 +63,7 @@ class PaymentSerializer(serializers.ModelSerializer):
             payment_date=timezone.now().date(),
         )
 
-        
+        # ✅ update invoice amounts
         invoice.amount_paid += amount
 
         if invoice.amount_paid >= invoice.amount_total:
@@ -74,5 +72,8 @@ class PaymentSerializer(serializers.ModelSerializer):
             invoice.status = "partial"
 
         invoice.save()
+
+        # ✅ refresh company status (CRUCIAL)
+        invoice.company.refresh_status()
 
         return payment

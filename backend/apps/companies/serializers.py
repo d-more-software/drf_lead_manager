@@ -3,6 +3,9 @@ from .models import Company
 
 
 class CompanySerializer(serializers.ModelSerializer):
+
+    total_due = serializers.SerializerMethodField()
+
     class Meta:
         model = Company
         fields = (
@@ -19,11 +22,23 @@ class CompanySerializer(serializers.ModelSerializer):
             "city",
             "address",
             "observation",
+
+            # 🔴 nouveaux
+            "credit_limit",
+            "status",
+            "total_due",
+
             "created_at",
             "updated_at",
         )
+
         read_only_fields = (
             "id",
+            "status",
+            "total_due",
             "created_at",
             "updated_at",
         )
+
+    def get_total_due(self, obj):
+        return obj.total_due
