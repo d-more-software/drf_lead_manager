@@ -9,6 +9,8 @@ from apps.invoices.serializers import InvoiceSerializer
 from django.http import FileResponse
 from rest_framework.decorators import action
 from apps.invoices.service.pdf_service import generate_invoice_pdf
+from apps.invoices.emails import send_invoice_email
+
 
 
 
@@ -40,6 +42,7 @@ class InvoiceViewSet(ModelViewSet):
         )
 
         schedule_invoice_reminders(invoice)
+        send_invoice_email(invoice)
 
 
             

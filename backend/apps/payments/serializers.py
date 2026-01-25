@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.utils import timezone
 from decimal import Decimal
-
+from apps.reminders.models import Reminder
 from apps.payments.models import Payment
 
 
@@ -72,6 +72,13 @@ class PaymentSerializer(serializers.ModelSerializer):
             invoice.status = "partial"
 
         invoice.save()
+
+# stop reminders if fully paid
+        
+        if invoice.status == "paid":
+            invoice.reminders.filter(
+            status=Reminder.Status.PENDING
+            ).update(status=Reminder.Status.CANCELLED)
 
         # ✅ refresh company status (CRUCIAL)
         invoice.company.refresh_status()

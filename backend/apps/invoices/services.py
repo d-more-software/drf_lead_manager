@@ -4,6 +4,8 @@ from django.utils import timezone
 from apps.contracts.models import Contract
 from apps.invoices.models import Invoice
 from apps.reminders.services import schedule_invoice_reminders
+from apps.invoices.emails import send_invoice_email
+
 
 
 def months_between(d1, d2):
@@ -77,3 +79,6 @@ def generate_invoices_for_today():
         # 7. planifier reminders
         # -------------------------
         schedule_invoice_reminders(invoice)
+        send_invoice_email(invoice)
+
+

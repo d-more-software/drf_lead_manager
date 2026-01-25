@@ -4,18 +4,17 @@ from django.utils import timezone
 
 class Reminder(models.Model):
 
-    TYPE_CHOICES = (
-        ("email", "Email"),
-        ("sms", "SMS"),
-        ("call", "Call"),
-        ("manual", "Manual"),
-    )
+    class Type(models.TextChoices):
+        EMAIL = "email", "Email"
+        SMS = "sms", "SMS"
+        CALL = "call", "Call"
+        MANUAL = "manual", "Manual"
 
-    STATUS_CHOICES = (
-        ("scheduled", "Scheduled"),
-        ("sent", "Sent"),
-        ("failed", "Failed"),
-    )
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        SENT = "sent", "Sent"
+        FAILED = "failed", "Failed"
+        CANCELLED = "cancelled", "Cancelled"
 
     invoice = models.ForeignKey(
         "invoices.Invoice",
@@ -28,8 +27,13 @@ class Reminder(models.Model):
         on_delete=models.CASCADE
     )
 
-    type = models.CharField(max_length=20, choices=TYPE_CHOICES)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="scheduled")
+    type = models.CharField(max_length=20, choices=Type.choices)
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING
+    )
 
     message = models.TextField(blank=True)
 
@@ -38,13 +42,21 @@ class Reminder(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # ========================
+    # helpers métier clean
+    # ========================
+
     def mark_sent(self):
-        self.status = "sent"
+        self.status = self.Status.SENT
         self.sent_at = timezone.now()
         self.save(update_fields=["status", "sent_at"])
 
     def mark_failed(self):
-        self.status = "failed"
+        self.status = self.Status.FAILED
+        self.save(update_fields=["status"])
+
+    def cancel(self):
+        self.status = self.Status.CANCELLED
         self.save(update_fields=["status"])
 
     def __str__(self):
