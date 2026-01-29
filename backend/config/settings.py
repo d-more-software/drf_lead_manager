@@ -20,6 +20,8 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = "accounts.User"
 
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 # Application definition
 
@@ -33,6 +35,8 @@ INSTALLED_APPS = [
 
     # Third-party
     'rest_framework',
+    "corsheaders",
+
 
     # Local apps
     "apps.accounts",
@@ -50,6 +54,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
