@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.filters import SearchFilter
 
 from .models import Company
 from .serializers import CompanySerializer
@@ -10,6 +11,10 @@ class CompanyViewSet(ModelViewSet):
 
     serializer_class = CompanySerializer
     permission_classes = [IsAuthenticated]
+
+        # 🔽 AJOUT CRITIQUE
+    filter_backends = [SearchFilter]
+    search_fields = ["name", "email", "city", "sector"]
 
     def get_queryset(self):
 
