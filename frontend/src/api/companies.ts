@@ -1,12 +1,14 @@
 import { api } from "./axios";
 import type { Company } from "../types/company";
+import type { Paginated } from "../types/pagination";
 
 type Payload = Partial<
 	Omit<Company, "id" | "status" | "total_due" | "created_at" | "updated_at">
 >;
 
 export const companiesApi = {
-	list: () => api.get<Company[]>("/api/companies/"),
+	list: (page = 1) =>
+		api.get<Paginated<Company>>(`/api/companies/?page=${page}`),
 
 	create: (data: Payload) => api.post<Company>("/api/companies/", data),
 

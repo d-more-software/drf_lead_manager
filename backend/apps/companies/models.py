@@ -23,7 +23,7 @@ class Company(models.Model):
         null=True,
     )
 
-    province = models.CharField(max_length=100)
+    province = models.CharField(max_length=100,blank=True)
     city = models.CharField(max_length=100)
     address = models.TextField(blank=True)
 
