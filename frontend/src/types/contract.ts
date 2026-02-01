@@ -5,7 +5,7 @@ export type BillingFrequency =
 	| "YEARLY";
 
 export type Contract = {
-	id?: number;
+	id: number;
 
 	company: number; // FK id
 	name: string;

@@ -9,24 +9,43 @@ export default function Sidebar() {
 			isActive ? "bg-primary text-primary-content" : "hover:bg-base-200"
 		}`;
 
+	function closeDrawer() {
+		const el = document.getElementById(
+			"app-drawer",
+		) as HTMLInputElement | null;
+		if (el) el.checked = false;
+	}
+
 	return (
 		<aside className="w-64 bg-base-100 border-r min-h-screen p-4 flex flex-col">
 			<h2 className="text-xl font-bold mb-6">Billing SaaS</h2>
 
 			<nav className="flex flex-col gap-2 flex-1">
-				<NavLink to="/" className={linkClass}>
+				<NavLink to="/" className={linkClass} onClick={closeDrawer}>
 					Tableau de bord
 				</NavLink>
 
-				<NavLink to="/companies" className={linkClass}>
+				<NavLink
+					to="/companies"
+					className={linkClass}
+					onClick={closeDrawer}
+				>
 					Entreprises
 				</NavLink>
 
-				<NavLink to="/contracts" className={linkClass}>
+				<NavLink
+					to="/contracts"
+					className={linkClass}
+					onClick={closeDrawer}
+				>
 					Contrats
 				</NavLink>
 
-				<NavLink to="/billing" className={linkClass}>
+				<NavLink
+					to="/billing"
+					className={linkClass}
+					onClick={closeDrawer}
+				>
 					Facturation
 				</NavLink>
 			</nav>

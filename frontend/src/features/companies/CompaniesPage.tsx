@@ -6,80 +6,97 @@ import type { Company } from "../../types/company";
 import { useAuth } from "../auth/AuthContext";
 
 export default function CompaniesPage() {
-  const {
-    companies,
-    loading,
-    create,
-    update,
-    remove,
-    next,
-    previous,
-    page,
-    count,
-  } = useCompanies();
+	const {
+		companies,
+		loading,
+		create,
+		update,
+		remove,
+		next,
+		previous,
+		page,
+		count,
+	} = useCompanies();
 
-  const { user } = useAuth();
-  const isAdmin = user?.is_agency_admin;
+	const { user } = useAuth();
+	const isAdmin = user?.is_agency_admin;
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [editing, setEditing] = useState<Company | null>(null);
+	const [isOpen, setIsOpen] = useState(false);
+	const [editing, setEditing] = useState<Company | null>(null);
 
-  if (loading) return <div>Loading...</div>;
+	if (loading) {
+		return (
+			<div className="flex items-center justify-center h-40">
+				<span className="loading loading-spinner loading-md" />
+			</div>
+		);
+	}
 
-  function openCreate() {
-    setEditing(null);
-    setIsOpen(true);
-  }
+	function openCreate() {
+		setEditing(null);
+		setIsOpen(true);
+	}
 
-  function openEdit(company: Company) {
-    setEditing(company);
-    setIsOpen(true);
-  }
+	function openEdit(company: Company) {
+		setEditing(company);
+		setIsOpen(true);
+	}
 
-  async function handleSubmit(data: any) {
-    if (editing) {
-      await update(editing.id, data);
-    } else {
-      await create(data);
-    }
-  }
+	async function handleSubmit(data: any) {
+		if (editing) {
+			await update(editing.id, data);
+		} else {
+			await create(data);
+		}
+	}
 
-  return (
-    <div className="space-y-6">
-      {isAdmin && (
-        <button className="btn btn-primary" onClick={openCreate}>
-          Nouvelle Entreprise
-        </button>
-      )}
+	return (
+		<div className="space-y-6 p-3 md:p-6">
+			{/* Header actions */}
+			{isAdmin && (
+				<div className="flex flex-col md:flex-row md:justify-between gap-3">
+					<button
+						className="btn btn-primary w-full md:w-auto"
+						onClick={openCreate}
+					>
+						Nouvelle entreprise
+					</button>
+				</div>
+			)}
 
-      <CompanyTable
-        companies={companies}
-        isAdmin={!!isAdmin}
-        onEdit={openEdit}
-        onDelete={remove}
-      />
+			{/* Table */}
+			<CompanyTable
+				companies={companies}
+				isAdmin={!!isAdmin}
+				onEdit={openEdit}
+				onDelete={remove}
+			/>
 
-      {/* ✅ Pagination */}
-      <div className="flex justify-between items-center">
-        <button className="btn btn-sm" onClick={previous}>
-          Précédent
-        </button>
+			{/* Pagination */}
+			<div className="flex flex-col md:flex-row items-center justify-between gap-3">
+				<button
+					className="btn btn-sm w-full md:w-auto"
+					onClick={previous}
+				>
+					Précédent
+				</button>
 
-        <span className="text-sm">
-          Page {page} — {count} entreprises
-        </span>
+				<span className="text-sm opacity-70 text-center">
+					Page {page} — {count} entreprises
+				</span>
 
-        <button className="btn btn-sm" onClick={next}>
-          Suivant
-        </button>
-      </div>
+				<button className="btn btn-sm w-full md:w-auto" onClick={next}>
+					Suivant
+				</button>
+			</div>
 
-      <CompanyFormModal
-        open={isOpen}
-        initial={editing}
-        onClose={() => setIsOpen(false)}
-        onSubmit={handleSubmit}
-      />
-    </div>
-  );
+			{/* Modal */}
+			<CompanyFormModal
+				open={isOpen}
+				initial={editing}
+				onClose={() => setIsOpen(false)}
+				onSubmit={handleSubmit}
+			/>
+		</div>
+	);
 }
