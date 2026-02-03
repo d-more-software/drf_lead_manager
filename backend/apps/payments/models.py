@@ -37,6 +37,7 @@ class Payment(models.Model):
 
     reference = models.CharField(
         max_length=255,
+        null=True,
         blank=True
     )
 

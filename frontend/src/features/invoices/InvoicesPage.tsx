@@ -1,6 +1,7 @@
 import { useState } from "react";
 import InvoiceTable from "./InvoiceTable";
 import InvoiceFormModal from "./InvoiceFormModal";
+import InvoicePaymentModal from "./InvoicePaymentModal";
 import { useInvoices } from "./useInvoices";
 import type { Invoice } from "../../types/invoice";
 
@@ -10,27 +11,29 @@ export default function InvoicesPage() {
 		loading,
 		create,
 		update,
-        downloadPdf,
 		remove,
-		count,
-		page,
 		next,
 		previous,
+		page,
+		count,
+		downloadPdf,
 	} = useInvoices();
 
 	const [editing, setEditing] = useState<Invoice | null>(null);
 	const [open, setOpen] = useState(false);
 
+	const [paying, setPaying] = useState<Invoice | null>(null);
+
 	if (loading) return <div>Loading...</div>;
 
-	function handleSubmit(data: any) {
-		editing?.id ? update(editing.id, data) : create(data);
+	function handleSubmit(data: Partial<Invoice>) {
+		editing?.id != null ? update(editing.id, data) : create(data);
 	}
 
 	return (
 		<div className="space-y-4">
 			<button
-				className="btn btn-primary"
+				className="btn btn-primary w-full md:w-auto"
 				onClick={() => {
 					setEditing(null);
 					setOpen(true);
@@ -45,17 +48,13 @@ export default function InvoicesPage() {
 					setEditing(i);
 					setOpen(true);
 				}}
-				onDelete={remove}
-                onPdf={downloadPdf}
+				onDelete={(i) => remove(i)}
+				onPdf={(i) => downloadPdf(i.id)}
+				onPay={(i) => setPaying(i)}
 			/>
 
-			{/* pagination */}
 			<div className="flex justify-between items-center">
-				<button
-					className="btn btn-sm"
-					disabled={page === 1}
-					onClick={previous}
-				>
+				<button className="btn btn-sm" onClick={previous}>
 					Précédent
 				</button>
 
@@ -63,11 +62,7 @@ export default function InvoicesPage() {
 					Page {page} — {count} factures
 				</span>
 
-				<button
-					className="btn btn-sm"
-					disabled={page * 10 >= count}
-					onClick={next}
-				>
+				<button className="btn btn-sm" onClick={next}>
 					Suivant
 				</button>
 			</div>
@@ -77,6 +72,14 @@ export default function InvoicesPage() {
 				initial={editing}
 				onClose={() => setOpen(false)}
 				onSubmit={handleSubmit}
+			/>
+
+			<InvoicePaymentModal
+				open={!!paying}
+				invoiceId={paying?.id ?? null}
+				maxAmount={Number(paying?.amount_due ?? 0)}
+				onClose={() => setPaying(null)}
+				// onSuccess={() => fetch()}
 			/>
 		</div>
 	);
