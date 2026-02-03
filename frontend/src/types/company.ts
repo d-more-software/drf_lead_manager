@@ -18,7 +18,7 @@ export type Company = {
 
 	observation?: string;
 
-	credit_limit: string; // decimal → string
+	credit_limit: string | null; // decimal → string
 	status: "normal" | "warning" | "contentious";
 
 	total_due: string;

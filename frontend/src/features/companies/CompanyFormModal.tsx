@@ -136,9 +136,14 @@ export default function CompanyFormModal({
 						step="0.01"
 						className="input input-bordered"
 						placeholder="Limite de crédit (XAF)"
-						value={form.credit_limit}
+						value={form.credit_limit ?? ""}
 						onChange={(e) =>
-							setField("credit_limit", Number(e.target.value))
+							setField(
+								"credit_limit",
+								e.target.value === ""
+									? null
+									: Number(e.target.value),
+							)
 						}
 					/>
 

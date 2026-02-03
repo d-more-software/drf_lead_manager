@@ -42,7 +42,7 @@ export default function Sidebar() {
 				</NavLink>
 
 				<NavLink
-					to="/billing"
+					to="/invoices"
 					className={linkClass}
 					onClick={closeDrawer}
 				>

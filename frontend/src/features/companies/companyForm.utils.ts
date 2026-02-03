@@ -16,7 +16,7 @@ export type CompanyForm = {
 	responsible_function: string;
 	accountant_name: string;
 	accountant_contact: string;
-	credit_limit: number;
+	credit_limit: number | null;
 	observation: string;
 };
 
@@ -35,7 +35,7 @@ export const EMPTY_COMPANY_FORM: CompanyForm = {
 	responsible_function: "",
 	accountant_name: "",
 	accountant_contact: "",
-	credit_limit: 0,
+	credit_limit: null,
 	observation: "",
 };
 
@@ -58,6 +58,6 @@ export function normalizeCompanyToForm(company?: Company | null): CompanyForm {
 		accountant_name: company.accountant_name ?? "",
 		accountant_contact: company.accountant_contact ?? "",
 		observation: company.observation ?? "",
-		credit_limit: Number(company.credit_limit ?? 0),
+		credit_limit: Number(company?.credit_limit ?? null),
 	};
 }

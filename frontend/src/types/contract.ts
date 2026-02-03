@@ -10,11 +10,11 @@ export type Contract = {
 	company: number; // FK id
 	name: string;
 
-	start_date: string; // YYYY-MM-DD
+	start_date: string | null; // YYYY-MM-DD
 	end_date?: string | null;
 
 	billing_frequency: BillingFrequency;
-	billing_day: number;
+	billing_day: number | null;
 
 	amount_due: string; // decimal -> string
 

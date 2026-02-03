@@ -26,29 +26,37 @@ class InvoiceViewSet(ModelViewSet):
             agency=user.agency
         )
 
+
     def perform_create(self, serializer):
+            user = self.request.user
 
-        user = self.request.user
+            if not user.is_agency_admin:
+                raise PermissionDenied("Only agency admins can create invoices.")
 
-        if not user.is_agency_admin:
-            raise PermissionDenied(
-                "Only agency admins can create invoices."
-            )
-
-        invoice = serializer.save(
+            invoice = serializer.save(
         agency=user.agency,
         created_by=user,
         issue_date=timezone.now().date()
-        )
+    )
 
-        schedule_invoice_reminders(invoice)
-        send_invoice_email(invoice)
+            try:
+                schedule_invoice_reminders(invoice)
+            except Exception:
+                pass
 
+            try:
+                send_invoice_email(invoice)
+            except Exception:
+                pass
+
+            invoice.company.refresh_status()
+
+
+        # ✅ refresh company status
+            invoice.company.refresh_status()
 
             
 
-        # ✅ refresh company status
-        invoice.company.refresh_status()
 
     def perform_update(self, serializer):
 

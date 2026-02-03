@@ -5,6 +5,12 @@ type Props = {
 	contract: Contract | null;
 	onClose: () => void;
 };
+const BILLING_LABELS: Record<Contract["billing_frequency"], string> = {
+	MONTHLY: "Mensuel",
+	QUARTERLY: "Trimestriel",
+	HALF_YEARLY: "Semestriel",
+	YEARLY: "Annuel",
+};
 
 export default function ContractDetailModal({
 	open,
@@ -41,7 +47,7 @@ export default function ContractDetailModal({
 						<label className="font-semibold">Date de début</label>
 						<input
 							className="input input-bordered"
-							value={contract.start_date}
+							value={contract.start_date ?? ""}
 							readOnly
 						/>
 					</div>
@@ -61,7 +67,7 @@ export default function ContractDetailModal({
 						</label>
 						<input
 							className="input input-bordered"
-							value={contract.billing_frequency}
+							value={BILLING_LABELS[contract.billing_frequency]}
 							readOnly
 						/>
 					</div>
@@ -72,7 +78,7 @@ export default function ContractDetailModal({
 						</label>
 						<input
 							className="input input-bordered"
-							value={contract.billing_day}
+							value={contract.billing_day ?? ""}
 							readOnly
 						/>
 					</div>
