@@ -3,7 +3,7 @@ import type { Invoice } from "../../types/invoice";
 type Props = {
 	invoices: Invoice[];
 	onEdit: (i: Invoice) => void;
-	onDelete: (id: number) => void;
+	onDelete: (invoice: Invoice) => void
 	onPdf: (i: Invoice) => void;
 	onPay: (i: Invoice) => void;
 };
@@ -77,7 +77,7 @@ export default function InvoiceTable({
 
 							<button
 								className="btn btn-xs btn-error w-full"
-								onClick={() => onDelete(i.id)}
+								onClick={() => onDelete(i)}
 							>
 								Supprimer
 							</button>

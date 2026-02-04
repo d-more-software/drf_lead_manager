@@ -3,6 +3,7 @@ import ContractTable from "./ContractTable";
 import ContractFormModal from "./ContractFormModal";
 import { useContracts } from "./useContracts";
 import type { Contract } from "../../types/contract";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 export default function ContractsPage() {
 	const {
@@ -19,6 +20,9 @@ export default function ContractsPage() {
 
 	const [editing, setEditing] = useState<Contract | null>(null);
 	const [open, setOpen] = useState(false);
+
+	const [toDelete, setToDelete] = useState<Contract | null>(null);
+	const [loadingDelete, setLoadingDelete] = useState(false);
 
 	if (loading) return <div className="p-6">Loading...</div>;
 
@@ -52,7 +56,8 @@ export default function ContractsPage() {
 						setEditing(c);
 						setOpen(true);
 					}}
-					onDelete={remove}
+				onDelete={(i) => setToDelete(i)}
+					// onDelete={remove}
 				/>
 			</div>
 
@@ -84,6 +89,24 @@ export default function ContractsPage() {
 				initial={editing}
 				onClose={() => setOpen(false)}
 				onSubmit={handleSubmit}
+			/>
+
+			<ConfirmDialog
+				open={!!toDelete}
+				title="Supprimer le contrat"
+				message="Cette action est irréversible."
+				loading={loadingDelete}
+				onClose={() => setToDelete(null)}
+				onConfirm={async () => {
+					if (!toDelete) return;
+
+					setLoadingDelete(true);
+					await remove(toDelete.id);
+					setLoadingDelete(false);
+
+					setToDelete(null);
+					// fetch();
+				}}
 			/>
 		</div>
 	);

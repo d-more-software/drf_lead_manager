@@ -4,6 +4,7 @@ import InvoiceFormModal from "./InvoiceFormModal";
 import InvoicePaymentModal from "./InvoicePaymentModal";
 import { useInvoices } from "./useInvoices";
 import type { Invoice } from "../../types/invoice";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 export default function InvoicesPage() {
 	const {
@@ -21,8 +22,10 @@ export default function InvoicesPage() {
 
 	const [editing, setEditing] = useState<Invoice | null>(null);
 	const [open, setOpen] = useState(false);
-
 	const [paying, setPaying] = useState<Invoice | null>(null);
+
+	const [toDelete, setToDelete] = useState<Invoice | null>(null);
+	const [loadingDelete, setLoadingDelete] = useState(false);
 
 	if (loading) return <div>Loading...</div>;
 
@@ -48,7 +51,8 @@ export default function InvoicesPage() {
 					setEditing(i);
 					setOpen(true);
 				}}
-				onDelete={(i) => remove(i)}
+				// onDelete={(i) => remove(i)}
+				onDelete={(i) => setToDelete(i)}
 				onPdf={(i) => downloadPdf(i.id)}
 				onPay={(i) => setPaying(i)}
 			/>
@@ -80,6 +84,24 @@ export default function InvoicesPage() {
 				maxAmount={Number(paying?.amount_due ?? 0)}
 				onClose={() => setPaying(null)}
 				// onSuccess={() => fetch()}
+			/>
+
+			<ConfirmDialog
+				open={!!toDelete}
+				title="Supprimer la facture"
+				message="Cette action est irréversible."
+				loading={loadingDelete}
+				onClose={() => setToDelete(null)}
+				onConfirm={async () => {
+					if (!toDelete) return;
+
+					setLoadingDelete(true);
+					await remove(toDelete.id);
+					setLoadingDelete(false);
+
+					setToDelete(null);
+					// fetch();
+				}}
 			/>
 		</div>
 	);

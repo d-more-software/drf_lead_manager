@@ -1,6 +1,6 @@
 import type { Company } from "../../types/company";
 
-function money(v: number | string) {
+function money(v: number | string | null) {
 	return new Intl.NumberFormat("fr-FR", {
 		style: "currency",
 		currency: "XAF",
@@ -11,7 +11,7 @@ type Props = {
 	companies: Company[];
 	isAdmin: boolean;
 	onEdit: (c: Company) => void;
-	onDelete: (id: number) => void;
+	onDelete: (Company: Company) => void;
 };
 
 export default function CompanyTable({
@@ -80,7 +80,7 @@ export default function CompanyTable({
 
 										<button
 											className="btn btn-xs btn-error w-full md:w-auto"
-											onClick={() => onDelete(c.id)}
+											onClick={() => onDelete(c)}
 										>
 											Supprimer
 										</button>

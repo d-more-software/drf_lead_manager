@@ -4,6 +4,7 @@ import CompanyTable from "./CompanyTable";
 import CompanyFormModal from "./CompanyFormModal";
 import type { Company } from "../../types/company";
 import { useAuth } from "../auth/AuthContext";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 export default function CompaniesPage() {
 	const {
@@ -23,6 +24,9 @@ export default function CompaniesPage() {
 
 	const [isOpen, setIsOpen] = useState(false);
 	const [editing, setEditing] = useState<Company | null>(null);
+
+	const [toDelete, setToDelete] = useState<Company | null>(null);
+	const [loadingDelete, setLoadingDelete] = useState(false);
 
 	if (loading) {
 		return (
@@ -69,7 +73,7 @@ export default function CompaniesPage() {
 				companies={companies}
 				isAdmin={!!isAdmin}
 				onEdit={openEdit}
-				onDelete={remove}
+				onDelete={(i) => setToDelete(i)}
 			/>
 
 			{/* Pagination */}
@@ -96,6 +100,24 @@ export default function CompaniesPage() {
 				initial={editing}
 				onClose={() => setIsOpen(false)}
 				onSubmit={handleSubmit}
+			/>
+
+			<ConfirmDialog
+				open={!!toDelete}
+				title="Supprimer l'entreprise"
+				message="Cette action est irréversible."
+				loading={loadingDelete}
+				onClose={() => setToDelete(null)}
+				onConfirm={async () => {
+					if (!toDelete) return;
+
+					setLoadingDelete(true);
+					await remove(toDelete.id);
+					setLoadingDelete(false);
+
+					setToDelete(null);
+					// fetch();
+				}}
 			/>
 		</div>
 	);
