@@ -90,10 +90,7 @@ class InvoiceViewSet(ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def pdf(self, request, pk=None):
-        """
-    GET /api/invoices/{id}/pdf/
-    Retourne le PDF de la facture.
-    """
+
 
         invoice = self.get_object()
 

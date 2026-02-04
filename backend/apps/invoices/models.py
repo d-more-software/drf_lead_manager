@@ -1,4 +1,5 @@
-from django.db import models
+from django.db import models, transaction
+from django.db.models import Max
 from django.utils import timezone
 
 from apps.agencies.models import Agency
@@ -9,23 +10,20 @@ from apps.contracts.models import Contract
 
 class Invoice(models.Model):
 
-
     STATUS_CHOICES = (
         ("draft", "Draft"),
         ("sent", "Sent"),
-        ("pending","Pending"),
+        ("pending", "Pending"),
         ("paid", "Paid"),
         ("overdue", "Overdue"),
         ("cancelled", "Cancelled"),
     )
-
 
     agency = models.ForeignKey(
         Agency,
         on_delete=models.CASCADE,
         related_name="invoices"
     )
-
 
     company = models.ForeignKey(
         Company,
@@ -41,17 +39,15 @@ class Invoice(models.Model):
         related_name="invoices"
     )
 
-
+    # ❌ plus de unique=True (important)
+    # ✅ unicité gérée par unique_together
     invoice_number = models.CharField(
         max_length=50,
-        unique=True,
         blank=True
     )
 
-
     issue_date = models.DateField()
     due_date = models.DateField()
-
 
     amount_total = models.DecimalField(
         max_digits=10,
@@ -64,18 +60,13 @@ class Invoice(models.Model):
         default=0
     )
 
-
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default="draft"
     )
 
-
-    notes = models.TextField(
-        blank=True
-    )
-
+    notes = models.TextField(blank=True)
 
     created_by = models.ForeignKey(
         User,
@@ -84,36 +75,48 @@ class Invoice(models.Model):
         related_name="created_invoices"
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-issue_date"]
         unique_together = ("agency", "invoice_number")
 
-
+    # =========================
+    # Computed
+    # =========================
 
     @property
     def amount_due(self):
+        return max(self.amount_total - self.amount_paid, 0)
 
-        return max(self.amount_total - self.amount_paid,0)
+    # =========================
+    # Safe invoice number generation
+    # =========================
 
     def save(self, *args, **kwargs):
 
         if not self.invoice_number:
-            year = timezone.now().year
-            count = Invoice.objects.filter(
-                agency=self.agency,
-                invoice_number__startswith=f"INV-{year}"
-            ).count() + 1
+            with transaction.atomic():
+                year = timezone.now().year
 
-            self.invoice_number = f"INV-{year}-{count:05d}"
+                last = (
+                    Invoice.objects
+                    .select_for_update()
+                    .filter(
+                        agency=self.agency,
+                        invoice_number__startswith=f"INV-{year}"
+                    )
+                    .aggregate(Max("invoice_number"))["invoice_number__max"]
+                )
 
+                if last:
+                    last_num = int(last.split("-")[-1])
+                    next_num = last_num + 1
+                else:
+                    next_num = 1
+
+                self.invoice_number = f"INV-{year}-{next_num:05d}"
 
         if (
             self.status not in ["paid", "cancelled"]

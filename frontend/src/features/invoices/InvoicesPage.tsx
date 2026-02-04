@@ -5,6 +5,7 @@ import InvoicePaymentModal from "./InvoicePaymentModal";
 import { useInvoices } from "./useInvoices";
 import type { Invoice } from "../../types/invoice";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import TableState from "../../components/ui/TableState";
 
 export default function InvoicesPage() {
 	const {
@@ -27,7 +28,7 @@ export default function InvoicesPage() {
 	const [toDelete, setToDelete] = useState<Invoice | null>(null);
 	const [loadingDelete, setLoadingDelete] = useState(false);
 
-	if (loading) return <div>Loading...</div>;
+	// if (loading) return <div>Loading...</div>;
 
 	function handleSubmit(data: Partial<Invoice>) {
 		editing?.id != null ? update(editing.id, data) : create(data);
@@ -44,8 +45,24 @@ export default function InvoicesPage() {
 			>
 				Nouvelle facture
 			</button>
+			<TableState
+				loading={loading}
+				empty={invoices.length === 0}
+				emptyMessage="Aucune facture trouvée"
+			>
+				<InvoiceTable
+					invoices={invoices}
+					onEdit={(i) => {
+						setEditing(i);
+						setOpen(true);
+					}}
+					onDelete={(i) => setToDelete(i)}
+					onPdf={(i) => downloadPdf(i.id)}
+					onPay={(i) => setPaying(i)}
+				/>
+			</TableState>
 
-			<InvoiceTable
+			{/* <InvoiceTable
 				invoices={invoices}
 				onEdit={(i) => {
 					setEditing(i);
@@ -55,7 +72,7 @@ export default function InvoicesPage() {
 				onDelete={(i) => setToDelete(i)}
 				onPdf={(i) => downloadPdf(i.id)}
 				onPay={(i) => setPaying(i)}
-			/>
+			/> */}
 
 			<div className="flex justify-between items-center">
 				<button className="btn btn-sm" onClick={previous}>

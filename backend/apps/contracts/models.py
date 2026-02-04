@@ -55,6 +55,11 @@ class Contract(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+    class Meta:
+        ordering = ["-start_date"]
+
+
+
     def get_frequency_months(self):
         return self.FREQUENCY_TO_MONTHS[self.billing_frequency]
 
