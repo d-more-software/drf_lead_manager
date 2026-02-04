@@ -4,6 +4,14 @@ import type { Invoice } from "../../types/invoice";
 
 const PAGE_SIZE = 10;
 
+export type InvoiceFilterParams = {
+	search?: string;
+	status?: string;
+	start_date?: string;
+	end_date?: string;
+	page?: number;
+};
+
 export function useInvoices() {
 	const [invoices, setInvoices] = useState<Invoice[]>([]);
 	const [loading, setLoading] = useState(false);
@@ -11,69 +19,78 @@ export function useInvoices() {
 	const [page, setPage] = useState(1);
 	const [count, setCount] = useState(0);
 
-	async function load(p = page) {
+	const [filters, setFilters] = useState<InvoiceFilterParams>({});
+
+	/* =========================
+	   SINGLE SOURCE OF TRUTH
+	   ========================= */
+	async function fetch(params?: InvoiceFilterParams, replace = false) {
 		setLoading(true);
 
-		const { data } = await invoicesApi.list(p);
+		const finalParams = replace ? params || {} : { ...filters, ...params };
+
+		const { data } = await invoicesApi.list(finalParams);
 
 		setInvoices(data.results);
 		setCount(data.count);
 
+		setFilters(finalParams);
+		setPage(finalParams.page ?? 1);
+
 		setLoading(false);
 	}
 
+	/* =========================
+	   CRUD
+	   ========================= */
+
 	async function create(payload: Partial<Invoice>) {
 		await invoicesApi.create(payload);
-		load();
+		fetch();
 	}
 
 	async function update(id: number, payload: Partial<Invoice>) {
 		await invoicesApi.update(id, payload);
-		load();
+		fetch();
 	}
 
 	async function remove(id: number) {
 		await invoicesApi.remove(id);
-		load();
+		fetch();
 	}
 
-async function downloadPdf(id: number) {
-  const res = await invoicesApi.pdf(id);
+	async function downloadPdf(id: number) {
+		const res = await invoicesApi.pdf(id);
 
-  const blob = new Blob([res.data], { type: "application/pdf" });
+		const blob = new Blob([res.data], { type: "application/pdf" });
+		const url = window.URL.createObjectURL(blob);
 
-  const url = window.URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = `invoice_${id}.pdf`;
+		link.click();
 
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `invoice_${id}.pdf`;
+		window.URL.revokeObjectURL(url);
+	}
 
-  document.body.appendChild(link);
-  link.click();
-
-  link.remove();
-  window.URL.revokeObjectURL(url);
-}
-
+	/* =========================
+	   PAGINATION (keeps filters)
+	   ========================= */
 
 	function next() {
 		if (page * PAGE_SIZE < count) {
-			const p = page + 1;
-			setPage(p);
-			load(p);
+			fetch({ page: page + 1 });
 		}
 	}
 
 	function previous() {
 		if (page > 1) {
-			const p = page - 1;
-			setPage(p);
-			load(p);
+			fetch({ page: page - 1 });
 		}
 	}
 
 	useEffect(() => {
-		load(1);
+		fetch({ page: 1 }, true);
 	}, []);
 
 	return {
@@ -83,6 +100,7 @@ async function downloadPdf(id: number) {
 		update,
 		remove,
 		downloadPdf,
+		fetch,
 		page,
 		count,
 		next,

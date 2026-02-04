@@ -10,6 +10,8 @@ from django.http import FileResponse
 from rest_framework.decorators import action
 from apps.invoices.service.pdf_service import generate_invoice_pdf
 from apps.invoices.emails import send_invoice_email
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 
 
@@ -18,6 +20,35 @@ class InvoiceViewSet(ModelViewSet):
 
     serializer_class = InvoiceSerializer
     permission_classes = [IsAuthenticated]
+
+
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+        OrderingFilter,
+    ]
+
+    # 🔵 filtres exacts
+    filterset_fields = [
+        "status",
+        "company",
+        "issue_date",
+        "due_date",
+    ]
+
+    # 🔵 recherche texte
+    search_fields = [
+        "invoice_number",
+        "company__name",
+        "notes",
+    ]
+
+    ordering_fields = [
+        "issue_date",
+        "due_date",
+        "amount_total",
+        "created_at",
+    ]
 
     def get_queryset(self):
         user = self.request.user

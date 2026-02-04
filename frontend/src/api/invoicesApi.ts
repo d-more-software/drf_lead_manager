@@ -1,7 +1,14 @@
 import { api } from "./axios";
 
+export type InvoiceQueryParams = {
+	page?: number;
+	search?: string;
+	status?: string;
+	ordering?: string;
+};
+
 export const invoicesApi = {
-	list: (page = 1) => api.get("/invoices/", { params: { page } }),
+	list: (params?: any) => api.get("/invoices/", { params }),
 
 	retrieve: (id: number) => api.get(`/invoices/${id}/`),
 

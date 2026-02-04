@@ -6,6 +6,7 @@ import { useInvoices } from "./useInvoices";
 import type { Invoice } from "../../types/invoice";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import TableState from "../../components/ui/TableState";
+import InvoiceFilters from "./InvoiceFilters";
 
 export default function InvoicesPage() {
 	const {
@@ -19,6 +20,7 @@ export default function InvoicesPage() {
 		page,
 		count,
 		downloadPdf,
+		fetch, // ← ajouter
 	} = useInvoices();
 
 	const [editing, setEditing] = useState<Invoice | null>(null);
@@ -45,6 +47,15 @@ export default function InvoicesPage() {
 			>
 				Nouvelle facture
 			</button>
+			<InvoiceFilters
+				onChange={
+					(p) =>
+						Object.keys(p).length === 0
+							? fetch({ page: 1 }, true) // reset
+							: fetch({ ...p, page: 1 }) // filter
+				}
+			/>
+
 			<TableState
 				loading={loading}
 				empty={invoices.length === 0}
