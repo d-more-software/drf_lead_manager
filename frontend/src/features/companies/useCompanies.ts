@@ -1,64 +1,113 @@
 import { useEffect, useState } from "react";
 import { companiesApi } from "../../api/companies";
+import { useToast } from "../../components/ui/ToastProvider";
 import type { Company } from "../../types/company";
 
+type Params = {
+	page?: number;
+	search?: string;
+};
+
 export function useCompanies() {
+	const { show } = useToast();
+
 	const [companies, setCompanies] = useState<Company[]>([]);
 	const [loading, setLoading] = useState(true);
 
 	const [page, setPage] = useState(1);
 	const [count, setCount] = useState(0);
-	const pageSize = 10; // correspond au DRF default
 
-	async function load(p = page) {
-		setLoading(true);
+	const [search, setSearch] = useState("");
 
-		const { data } = await companiesApi.list(p);
+	const pageSize = 10;
 
-		setCompanies(data.results);
-		setCount(data.count);
+	/* =========================
+	   FETCH
+	   ========================= */
 
-		setLoading(false);
-	}
-
-	async function create(payload: any) {
+	async function load(params?: Params) {
 		try {
-			await companiesApi.create(payload);
-			await load();
-		} catch (e: any) {
-			console.log("DRF error →", e.response?.data);
-			throw e;
+			setLoading(true);
+
+			const final = {
+				page: params?.page ?? page,
+				search: params?.search ?? search,
+			};
+
+			const { data } = await companiesApi.list(final);
+
+			setCompanies(data.results ?? []);
+			setCount(data.count ?? 0);
+
+			setPage(final.page);
+			setSearch(final.search ?? "");
+		} catch (err) {
+			show("Erreur chargement entreprises", "error");
+		} finally {
+			setLoading(false);
 		}
 	}
 
-	async function update(id: number, payload: any) {
-		await companiesApi.update(id, payload);
-		await load();
+	/* =========================
+	   SEARCH
+	   ========================= */
+
+	function searchCompanies(q: string) {
+		load({ page: 1, search: q });
+	}
+
+	/* =========================
+	   CRUD
+	   ========================= */
+
+	async function create(payload: Partial<Company>) {
+		try {
+			await companiesApi.create(payload);
+			show("Entreprise créée", "success");
+			load();
+		} catch {
+			show("Erreur création entreprise", "error");
+		}
+	}
+
+	async function update(id: number, payload: Partial<Company>) {
+		try {
+			await companiesApi.update(id, payload);
+			show("Entreprise modifiée", "success");
+			load();
+		} catch {
+			show("Erreur modification entreprise", "error");
+		}
 	}
 
 	async function remove(id: number) {
-		await companiesApi.delete(id);
-		await load();
+		try {
+			await companiesApi.delete(id);
+			show("Entreprise supprimée", "success");
+			load();
+		} catch {
+			show("Erreur suppression entreprise", "error");
+		}
 	}
+
+	/* =========================
+	   PAGINATION
+	   ========================= */
 
 	function next() {
 		if (page * pageSize < count) {
-			const p = page + 1;
-			setPage(p);
-			load(p);
+			load({ page: page + 1 });
 		}
 	}
 
 	function previous() {
 		if (page > 1) {
-			const p = page - 1;
-			setPage(p);
-			load(p);
+			load({ page: page - 1 });
 		}
 	}
 
 	useEffect(() => {
-		load(1);
+		load({ page: 1 });
 	}, []);
 
 	return {
@@ -69,6 +118,7 @@ export function useCompanies() {
 		remove,
 		next,
 		previous,
+		searchCompanies,
 		page,
 		count,
 	};

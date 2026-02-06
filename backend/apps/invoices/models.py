@@ -1,6 +1,6 @@
-from django.db import models, transaction
-from django.db.models import Max
+from django.db import models
 from django.utils import timezone
+import uuid
 
 from apps.agencies.models import Agency
 from apps.accounts.models import User
@@ -39,8 +39,7 @@ class Invoice(models.Model):
         related_name="invoices"
     )
 
-    # ❌ plus de unique=True (important)
-    # ✅ unicité gérée par unique_together
+    # ❗ PAS unique=True
     invoice_number = models.CharField(
         max_length=50,
         blank=True
@@ -91,33 +90,18 @@ class Invoice(models.Model):
         return max(self.amount_total - self.amount_paid, 0)
 
     # =========================
-    # Safe invoice number generation
+    # SAFE UUID NUMBER (SQLite proof)
     # =========================
 
     def save(self, *args, **kwargs):
 
+        # ✅ génération collision-proof
         if not self.invoice_number:
-            with transaction.atomic():
-                year = timezone.now().year
+            year = timezone.now().year
+            uid = uuid.uuid4().hex[:8].upper()
+            self.invoice_number = f"INV-{year}-{uid}"
 
-                last = (
-                    Invoice.objects
-                    .select_for_update()
-                    .filter(
-                        agency=self.agency,
-                        invoice_number__startswith=f"INV-{year}"
-                    )
-                    .aggregate(Max("invoice_number"))["invoice_number__max"]
-                )
-
-                if last:
-                    last_num = int(last.split("-")[-1])
-                    next_num = last_num + 1
-                else:
-                    next_num = 1
-
-                self.invoice_number = f"INV-{year}-{next_num:05d}"
-
+        # auto overdue
         if (
             self.status not in ["paid", "cancelled"]
             and self.due_date < timezone.now().date()

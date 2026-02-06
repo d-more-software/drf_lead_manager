@@ -15,6 +15,7 @@ export default function CompaniesPage() {
 		remove,
 		next,
 		previous,
+		searchCompanies,
 		page,
 		count,
 	} = useCompanies();
@@ -22,19 +23,13 @@ export default function CompaniesPage() {
 	const { user } = useAuth();
 	const isAdmin = user?.is_agency_admin;
 
+	const [query, setQuery] = useState("");
+
 	const [isOpen, setIsOpen] = useState(false);
 	const [editing, setEditing] = useState<Company | null>(null);
 
 	const [toDelete, setToDelete] = useState<Company | null>(null);
 	const [loadingDelete, setLoadingDelete] = useState(false);
-
-	if (loading) {
-		return (
-			<div className="flex items-center justify-center h-40">
-				<span className="loading loading-spinner loading-md" />
-			</div>
-		);
-	}
 
 	function openCreate() {
 		setEditing(null);
@@ -47,45 +42,76 @@ export default function CompaniesPage() {
 	}
 
 	async function handleSubmit(data: any) {
-		if (editing) {
-			await update(editing.id, data);
-		} else {
-			await create(data);
-		}
+		editing ? await update(editing.id, data) : await create(data);
 	}
+
+	function handleSearch(v: string) {
+		setQuery(v);
+		searchCompanies(v);
+	}
+
+	// function resetSearch() {
+	// 	setQuery("");
+	// 	searchCompanies("");
+	// }
 
 	return (
 		<div className="space-y-6 p-3 md:p-6">
-			{/* Header actions */}
-			{isAdmin && (
-				<div className="flex flex-col md:flex-row md:justify-between gap-3">
+
+			{/* Header */}
+			<div className="flex flex-col md:flex-row md:justify-between gap-3">
+
+				<div className="flex gap-2 w-full md:w-80">
+					<input
+						value={query}
+						onChange={(e) => handleSearch(e.target.value)}
+						className="input input-bordered w-full"
+						placeholder="Rechercher entreprise..."
+					/>
+
+					{/* {query && (
+						<button
+							className="btn btn-ghost"
+							onClick={resetSearch}
+						>
+						 ✕
+						</button>
+					)} */}
+				</div>
+
+				{isAdmin && (
 					<button
 						className="btn btn-primary w-full md:w-auto"
 						onClick={openCreate}
 					>
 						Nouvelle entreprise
 					</button>
-				</div>
-			)}
+				)}
+			</div>
 
 			{/* Table */}
-			<CompanyTable
-				companies={companies}
-				isAdmin={!!isAdmin}
-				onEdit={openEdit}
-				onDelete={(i) => setToDelete(i)}
-			/>
+			<div className="relative">
+				{loading && (
+					<div className="absolute inset-0 bg-base-100/60 flex items-center justify-center z-10">
+						<span className="loading loading-spinner" />
+					</div>
+				)}
+
+				<CompanyTable
+					companies={companies}
+					isAdmin={!!isAdmin}
+					onEdit={openEdit}
+					onDelete={(i) => setToDelete(i)}
+				/>
+			</div>
 
 			{/* Pagination */}
 			<div className="flex flex-col md:flex-row items-center justify-between gap-3">
-				<button
-					className="btn btn-sm w-full md:w-auto"
-					onClick={previous}
-				>
+				<button className="btn btn-sm w-full md:w-auto" onClick={previous}>
 					Précédent
 				</button>
 
-				<span className="text-sm opacity-70 text-center">
+				<span className="text-sm opacity-70">
 					Page {page} — {count} entreprises
 				</span>
 
@@ -110,13 +136,10 @@ export default function CompaniesPage() {
 				onClose={() => setToDelete(null)}
 				onConfirm={async () => {
 					if (!toDelete) return;
-
 					setLoadingDelete(true);
 					await remove(toDelete.id);
 					setLoadingDelete(false);
-
 					setToDelete(null);
-					// fetch();
 				}}
 			/>
 		</div>
