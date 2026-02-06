@@ -16,6 +16,8 @@ export default function ContractsPage() {
 		page,
 		next,
 		previous,
+		searchContracts,
+		search,
 	} = useContracts();
 
 	const [editing, setEditing] = useState<Contract | null>(null);
@@ -24,7 +26,13 @@ export default function ContractsPage() {
 	const [toDelete, setToDelete] = useState<Contract | null>(null);
 	const [loadingDelete, setLoadingDelete] = useState(false);
 
-	if (loading) return <div className="p-6">Loading...</div>;
+	{
+		loading && (
+			<div className="flex justify-center py-4">
+				<span className="loading loading-spinner loading-sm" />
+			</div>
+		);
+	}
 
 	function handleSubmit(data: Partial<Contract>) {
 		if (editing) update(editing.id, data);
@@ -35,7 +43,12 @@ export default function ContractsPage() {
 		<div className="space-y-6 p-4 md:p-6">
 			{/* Header */}
 			<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-				<h1 className="text-xl font-bold">Contrats</h1>
+				<input
+					className="input input-bordered w-full md:w-72"
+					placeholder="Rechercher contrat..."
+					value={search}
+					onChange={(e) => searchContracts(e.target.value)}
+				/>
 
 				<button
 					className="btn btn-primary w-full md:w-auto"
@@ -56,7 +69,7 @@ export default function ContractsPage() {
 						setEditing(c);
 						setOpen(true);
 					}}
-				onDelete={(i) => setToDelete(i)}
+					onDelete={(i) => setToDelete(i)}
 					// onDelete={remove}
 				/>
 			</div>

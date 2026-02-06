@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { INVOICE_STATUS_LABELS } from "./invoiceStatus";
 
 export type InvoiceFilterParams = {
 	search?: string;
@@ -43,15 +44,17 @@ export default function InvoiceFilters({ onChange }: Props) {
 				<label className="text-xs">Statut</label>
 				<select
 					className="select select-bordered"
-					value={status}
 					onChange={(e) => setStatus(e.target.value)}
 				>
-					<option value="">Tous</option>
-					<option value="draft">Draft</option>
-					<option value="pending">Pending</option>
-					<option value="paid">Paid</option>
-					<option value="overdue">Overdue</option>
-					<option value="cancelled">Cancelled</option>
+					<option value="">Tous les statuts</option>
+
+					{Object.entries(INVOICE_STATUS_LABELS).map(
+						([value, label]) => (
+							<option key={value} value={value}>
+								{label}
+							</option>
+						),
+					)}
 				</select>
 			</div>
 

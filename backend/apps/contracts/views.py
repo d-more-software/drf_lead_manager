@@ -3,11 +3,19 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from .models import Contract
 from .serializers import ContractSerializer
+from rest_framework.filters import SearchFilter
+
 
 
 class ContractViewSet(ModelViewSet):
     serializer_class = ContractSerializer
     permission_classes = [IsAuthenticated]
+
+    filter_backends = [SearchFilter]
+    search_fields = [
+        "name",                             
+        "company__name",                 
+    ]
     
     def get_queryset(self):
         user = self.request.user

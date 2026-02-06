@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import { api } from "../../api/axios";
-import { useToast } from "../../components/ui/ToastProvider"; // ← ton toast custom
+import { useToast } from "../../components/ui/ToastProvider";
 import type { Contract } from "../../types/contract";
 
 type Paginated<T> = {
 	results: T[];
 	count: number;
-	next: string | null;
-	previous: string | null;
 };
 
 export function useContracts() {
@@ -17,6 +15,7 @@ export function useContracts() {
 	const [loading, setLoading] = useState(false);
 	const [count, setCount] = useState(0);
 	const [page, setPage] = useState(1);
+	const [search, setSearch] = useState("");
 
 	const pageSize = 10;
 
@@ -24,18 +23,20 @@ export function useContracts() {
 	   FETCH
 	   ========================= */
 
-	async function fetchAll(p = page) {
+	async function fetchAll(p = page, q = search) {
 		try {
 			setLoading(true);
 
 			const res = await api.get<Paginated<Contract>>("/contracts/", {
-				params: { page: p },
+				params: {
+					page: p,
+					search: q || undefined, // reset si vide
+				},
 			});
 
 			setContracts(res.data.results ?? []);
 			setCount(res.data.count ?? 0);
-		} catch (err: any) {
-			console.error(err);
+		} catch {
 			show("Erreur chargement contrats", "error");
 		} finally {
 			setLoading(false);
@@ -43,49 +44,35 @@ export function useContracts() {
 	}
 
 	/* =========================
-	   CRUD + TOAST
+	   SEARCH
+	   ========================= */
+
+	function searchContracts(value: string) {
+		setSearch(value);
+		setPage(1);
+		fetchAll(1, value);
+	}
+
+	/* =========================
+	   CRUD
 	   ========================= */
 
 	async function create(payload: Partial<Contract>) {
-		try {
-			await api.post("/contracts/", payload);
-			show("Contrat créé", "success");
-			await fetchAll();
-		} catch (err: any) {
-			console.error(err);
-			show(
-				err?.response?.data?.detail || "Erreur création contrat",
-				"error"
-			);
-		}
+		await api.post("/contracts/", payload);
+		show("Contrat créé", "success");
+		fetchAll();
 	}
 
 	async function update(id: number, payload: Partial<Contract>) {
-		try {
-			await api.put(`/contracts/${id}/`, payload);
-			show("Contrat modifié", "success");
-			await fetchAll();
-		} catch (err: any) {
-			console.error(err);
-			show(
-				err?.response?.data?.detail || "Erreur modification contrat",
-				"error"
-			);
-		}
+		await api.put(`/contracts/${id}/`, payload);
+		show("Contrat modifié", "success");
+		fetchAll();
 	}
 
 	async function remove(id: number) {
-		try {
-			await api.delete(`/contracts/${id}/`);
-			show("Contrat supprimé", "success");
-			await fetchAll();
-		} catch (err: any) {
-			console.error(err);
-			show(
-				err?.response?.data?.detail || "Erreur suppression contrat",
-				"error"
-			);
-		}
+		await api.delete(`/contracts/${id}/`);
+		show("Contrat supprimé", "success");
+		fetchAll();
 	}
 
 	/* =========================
@@ -122,5 +109,7 @@ export function useContracts() {
 		remove,
 		next,
 		previous,
+		searchContracts,
+		search,
 	};
 }

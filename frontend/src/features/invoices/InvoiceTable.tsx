@@ -1,9 +1,10 @@
 import type { Invoice } from "../../types/invoice";
+import { invoiceStatusLabel } from "./invoiceStatus";
 
 type Props = {
 	invoices: Invoice[];
 	onEdit: (i: Invoice) => void;
-	onDelete: (invoice: Invoice) => void
+	onDelete: (invoice: Invoice) => void;
 	onPdf: (i: Invoice) => void;
 	onPay: (i: Invoice) => void;
 };
@@ -37,7 +38,10 @@ export default function InvoiceTable({
 							<span className="font-semibold">
 								{i.invoice_number}
 							</span>
-							<span className="badge">{i.status}</span>
+
+							<span className="badge">
+								{invoiceStatusLabel(i.status)}
+							</span>
 						</div>
 
 						<div className="text-sm opacity-70">
