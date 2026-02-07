@@ -102,7 +102,7 @@ export function useInvoices() {
 	}
 
 	/* =========================
-	   PAGINATION (keeps filters)
+	   PAGINATION
 	   ========================= */
 
 	function next() {
@@ -123,6 +123,7 @@ export function useInvoices() {
 
 	return {
 		invoices,
+		setInvoices, // ← ajouté (clé pour optimistic update)
 		loading,
 		create,
 		update,

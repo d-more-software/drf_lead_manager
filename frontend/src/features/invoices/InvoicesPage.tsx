@@ -11,6 +11,7 @@ import InvoiceFilters from "./InvoiceFilters";
 export default function InvoicesPage() {
 	const {
 		invoices,
+		setInvoices, // ← important pour optimistic update
 		loading,
 		create,
 		update,
@@ -20,7 +21,7 @@ export default function InvoicesPage() {
 		page,
 		count,
 		downloadPdf,
-		fetch, // ← ajouter
+		fetch,
 	} = useInvoices();
 
 	const [editing, setEditing] = useState<Invoice | null>(null);
@@ -29,8 +30,6 @@ export default function InvoicesPage() {
 
 	const [toDelete, setToDelete] = useState<Invoice | null>(null);
 	const [loadingDelete, setLoadingDelete] = useState(false);
-
-	// if (loading) return <div>Loading...</div>;
 
 	function handleSubmit(data: Partial<Invoice>) {
 		editing?.id != null ? update(editing.id, data) : create(data);
@@ -47,12 +46,12 @@ export default function InvoicesPage() {
 			>
 				Nouvelle facture
 			</button>
+
 			<InvoiceFilters
-				onChange={
-					(p) =>
-						Object.keys(p).length === 0
-							? fetch({ page: 1 }, true) // reset
-							: fetch({ ...p, page: 1 }) // filter
+				onChange={(p) =>
+					Object.keys(p).length === 0
+						? fetch({ page: 1 }, true)
+						: fetch({ ...p, page: 1 })
 				}
 			/>
 
@@ -73,18 +72,6 @@ export default function InvoicesPage() {
 				/>
 			</TableState>
 
-			{/* <InvoiceTable
-				invoices={invoices}
-				onEdit={(i) => {
-					setEditing(i);
-					setOpen(true);
-				}}
-				// onDelete={(i) => remove(i)}
-				onDelete={(i) => setToDelete(i)}
-				onPdf={(i) => downloadPdf(i.id)}
-				onPay={(i) => setPaying(i)}
-			/> */}
-
 			<div className="flex justify-between items-center">
 				<button className="btn btn-sm" onClick={previous}>
 					Précédent
@@ -99,6 +86,7 @@ export default function InvoicesPage() {
 				</button>
 			</div>
 
+			{/* Create / Edit */}
 			<InvoiceFormModal
 				open={open}
 				initial={editing}
@@ -106,14 +94,32 @@ export default function InvoicesPage() {
 				onSubmit={handleSubmit}
 			/>
 
+			{/* Payment with optimistic update */}
 			<InvoicePaymentModal
 				open={!!paying}
 				invoiceId={paying?.id ?? null}
 				maxAmount={Number(paying?.amount_due ?? 0)}
 				onClose={() => setPaying(null)}
-				// onSuccess={() => fetch()}
+				onSuccess={(paidAmount) => {
+					if (!paying) return;
+
+					setInvoices((prev: Invoice[]) =>
+						prev.map((inv): Invoice => {
+							if (inv.id !== paying.id) return inv;
+
+							const newDue = Number(inv.amount_due) - paidAmount;
+
+							return {
+								...inv,
+								amount_due: String(newDue),
+								status: newDue <= 0 ? "paid" : inv.status, // ← FIX
+							};
+						}),
+					);
+				}}
 			/>
 
+			{/* Delete */}
 			<ConfirmDialog
 				open={!!toDelete}
 				title="Supprimer la facture"
@@ -128,7 +134,6 @@ export default function InvoicesPage() {
 					setLoadingDelete(false);
 
 					setToDelete(null);
-					// fetch();
 				}}
 			/>
 		</div>
