@@ -64,8 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		try {
 			const res = await meApi();
 			setUser(res.data);
-		} catch {
-			logout();
+		} catch (err: any) {
+			// 401 = access expiré → l'interceptor va refresh automatiquement
+			if (err.response?.status !== 401) {
+				logout(); // vraie erreur uniquement
+			}
 		} finally {
 			setLoading(false);
 		}

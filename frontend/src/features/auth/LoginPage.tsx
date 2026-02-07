@@ -9,16 +9,25 @@ export default function LoginPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
+	const [loading, setLoading] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
+		if (loading) return;
+
 		try {
+			setLoading(true);
 			setError("");
+
 			await login(email, password);
-			navigate("/");
+
+			// attendre que React flush state
+			setTimeout(() => navigate("/", { replace: true }), 0);
 		} catch {
 			setError("Identifiants invalides");
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -51,8 +60,12 @@ export default function LoginPage() {
 
 						{error && <p className="text-error text-sm">{error}</p>}
 
-						<button className="btn btn-primary w-full">
-							Se connecter
+						<button
+							type="submit"
+							className="btn btn-primary w-full"
+							disabled={loading}
+						>
+							{loading ? "Connexion..." : "Se connecter"}
 						</button>
 					</form>
 

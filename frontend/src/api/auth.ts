@@ -10,4 +10,4 @@ export const registerApi = (data: {
 	agency_name: string;
 }) => api.post("/accounts/register/", data);
 
-export const meApi = () => api.get("api/accounts/me/");
+export const meApi = () => api.get("/accounts/me/");
